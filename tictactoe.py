@@ -28,53 +28,55 @@ _TTTB = namedtuple("TicTacToeBoard", "tup turn winner terminal")
 # Inheriting from a namedtuple is convenient because it makes the class
 # immutable and predefines __init__, __repr__, __hash__, __eq__, and others
 class TicTacToeBoard(_TTTB, Node):
-    def find_children(board):
-        if board.terminal:  # If the game is finished then no moves can be made
+    def find_children(self):
+        if self.terminal:  # If the game is finished then no moves can be made
             return set()
         # Otherwise, you can make a move in each of the empty spots
         return {
-            board.make_move(i) for i, value in enumerate(board.tup) if value is None
+            self.make_move(i) for i, value in enumerate(self.tup) if value is None
         }
 
-    def find_random_child(board):
-        if board.terminal:
+    def find_random_child(self):
+        if self.terminal:
             return None  # If the game is finished then no moves can be made
-        empty_spots = [i for i, value in enumerate(board.tup) if value is None]
-        return board.make_move(choice(empty_spots))
+        empty_spots = [i for i, value in enumerate(self.tup) if value is None]
+        return self.make_move(choice(empty_spots))
 
-    def reward(board):
-        if not board.terminal:
-            raise RuntimeError(f"reward called on nonterminal board {board}")
-        if board.winner is board.turn:
+    def reward(self):
+        if not self.terminal:
+            raise RuntimeError(f"reward called on nonterminal board {self}")
+        if self.winner is self.turn:
             # It's your turn and you've already won. Should be impossible.
-            raise RuntimeError(f"reward called on unreachable board {board}")
-        if board.turn is (not board.winner):
+            raise RuntimeError(f"reward called on unreachable board {self}")
+        if self.turn is (not self.winner):
             return 0  # Your opponent has just won. Bad.
-        if board.winner is None:
+        if self.winner is None:
             return 0.5  # Board is a tie
         # The winner is neither True, False, nor None
-        raise RuntimeError(f"board has unknown winner type {board.winner}")
+        raise RuntimeError(f"board has unknown winner type {self.winner}")
 
-    def is_terminal(board):
-        return board.terminal
+    def is_terminal(self):
+        return self.terminal
 
-    def make_move(board, index):
-        tup = board.tup[:index] + (board.turn,) + board.tup[index + 1 :]
-        turn = not board.turn
+    def make_move(self, index):
+        tup = self.tup[:index] + (self.turn, ) + self.tup[index + 1 :]
+        turn = not self.turn
         winner = _find_winner(tup)
-        is_terminal = (winner is not None) or not any(v is None for v in tup)
+        is_terminal = winner is not None or all(v is not None for v in tup)
         return TicTacToeBoard(tup, turn, winner, is_terminal)
 
-    def to_pretty_string(board):
+    def to_pretty_string(self):
         to_char = lambda v: ("X" if v is True else ("O" if v is False else " "))
         rows = [
-            [to_char(board.tup[3 * row + col]) for col in range(3)] for row in range(3)
+            [to_char(self.tup[3 * row + col]) for col in range(3)]
+            for row in range(3)
         ]
         return (
             "\n  1 2 3\n"
-            + "\n".join(str(i + 1) + " " + " ".join(row) for i, row in enumerate(rows))
-            + "\n"
-        )
+            + "\n".join(
+                f"{str(i + 1)} " + " ".join(row) for i, row in enumerate(rows)
+            )
+        ) + "\n"
 
 
 def play_game():

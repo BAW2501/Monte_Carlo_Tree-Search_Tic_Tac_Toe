@@ -15,7 +15,7 @@ class MCTS:
     def __init__(self, exploration_weight=1):
         self.Q = defaultdict(int)  # total reward of each node
         self.N = defaultdict(int)  # total visit count for each node
-        self.children = dict()  # children of each node
+        self.children = {}
         self.exploration_weight = exploration_weight
 
     def choose(self, node):
@@ -27,9 +27,7 @@ class MCTS:
             return node.find_random_child()
 
         def score(n):
-            if self.N[n] == 0:
-                return float("-inf")  # avoid unseen moves
-            return self.Q[n] / self.N[n]  # average reward
+            return float("-inf") if self.N[n] == 0 else self.Q[n] / self.N[n]
 
         return max(self.children[node], key=score)
 
