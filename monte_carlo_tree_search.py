@@ -102,7 +102,7 @@ class Node(ABC):
     """
 
     @abstractmethod
-    def find_children(self):
+    def find_children(self):# rather problematic when there is alot of successors
         "All possible successors of this board state"
         return set()
 
